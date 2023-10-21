@@ -1,5 +1,6 @@
 package io.onhigh.os.flygateway.http;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.onhigh.os.flygateway.AbstractGatewayAnnotationProcessor;
 import io.onhigh.os.flygateway.FlyEnvironment;
@@ -57,7 +58,8 @@ public class HttpGatewayAnnotationProcessor extends AbstractGatewayAnnotationPro
                 .clientReadTimeout(gatewayAnnotation.clientReadTimeout())
                 .connectTimeout(gatewayAnnotation.clientConnectTimeout())
                 .clientWriteTimeout(gatewayAnnotation.clientWriteTimeout())
-                .objectMapper(new ObjectMapper())
+                .objectMapper(new ObjectMapper()
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false))
                 .requestInterceptors(new ArrayList<>());
     }
 
