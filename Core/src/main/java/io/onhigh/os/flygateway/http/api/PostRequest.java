@@ -7,4 +7,13 @@ import java.lang.annotation.*;
 @Documented
 @Request(method = RequestMethod.POST)
 public @interface PostRequest {
+
+    String value() default "";
+
+    String[] consumes() default {};
+
+    String[] produces() default {};
+
+    String[] headers() default {};
+
 }

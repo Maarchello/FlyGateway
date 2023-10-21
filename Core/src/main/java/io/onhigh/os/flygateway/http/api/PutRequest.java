@@ -7,4 +7,13 @@ import java.lang.annotation.*;
 @Documented
 @Request(method = RequestMethod.PUT)
 public @interface PutRequest {
+
+    String value() default "";
+
+    String[] consumes() default {};
+
+    String[] produces() default {};
+
+    String[] headers() default {};
+
 }

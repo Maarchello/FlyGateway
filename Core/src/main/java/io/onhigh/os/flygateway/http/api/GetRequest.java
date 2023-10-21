@@ -14,4 +14,10 @@ public @interface GetRequest {
      */
     String value() default "";
 
+    String[] consumes() default {};
+
+    String[] produces() default {};
+
+    String[] headers() default {};
+
 }

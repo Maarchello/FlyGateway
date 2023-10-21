@@ -9,7 +9,7 @@
 
     <artifactId>FlyGateway.Core</artifactId>
     <packaging>jar</packaging>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
 
     <name>FlyGateway.Core</name>
     <url>http://maven.apache.org</url>

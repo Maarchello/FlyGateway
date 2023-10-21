@@ -10,6 +10,7 @@ import feign.slf4j.Slf4jLogger;
 import io.onhigh.os.flygateway.FlyEnvironment;
 import io.onhigh.os.flygateway.http.HttpGatewayFactory;
 import io.onhigh.os.flygateway.http.codec.JacksonExtendedDecoder;
+import io.onhigh.os.flygateway.http.impl.factories.feign.contract.FlyGatewayApiContract;
 
 import java.util.concurrent.TimeUnit;
 
@@ -17,9 +18,6 @@ public class FeignBasedHttpGatewayFactoryImpl implements HttpGatewayFactory {
 
     private final Class<?> type;
     private final FlyEnvironment flyEnvironment;
-
-    private long connectTimeout = -1L;
-    private long socketTimeout = -1L;
 
     public FeignBasedHttpGatewayFactoryImpl(Class<?> type, FlyEnvironment flyEnvironment) {
         this.type = type;
@@ -39,14 +37,14 @@ public class FeignBasedHttpGatewayFactoryImpl implements HttpGatewayFactory {
     private <T> T getObject(Context context) {
 
         Request.Options requestOptions = new Request.Options(
-                connectTimeout, TimeUnit.MILLISECONDS,
-                socketTimeout, TimeUnit.MILLISECONDS, true);
+                context.getConnectTimeout(), TimeUnit.MILLISECONDS,
+                context.getClientReadTimeout(), TimeUnit.MILLISECONDS, true);
 
         return (T) Feign.builder()
                 .requestInterceptors(context.getRequestInterceptors())
                 .retryer(Retryer.NEVER_RETRY)
                 .errorDecoder(context.getErrorDecoder())
-//                .contract(new FlyGatewayApiContract(flyEnvironment))
+                .contract(new FlyGatewayApiContract(flyEnvironment))
                 .client(this.flyEnvironment.getHttpClientProvider().getClient(context))
                 .encoder(new JacksonEncoder(context.getObjectMapper()))
                 .decoder(new JacksonExtendedDecoder(new JacksonDecoder(context.getObjectMapper())))
