@@ -1,6 +1,7 @@
 package io.onhigh.os.flygateway.mq;
 
 import io.onhigh.os.flygateway.GatewayAnnotationProcessor;
+import io.onhigh.os.flygateway.mq.api.MQGateway;
 
 /**
  * @author Marat Kadzhaev
@@ -10,6 +11,6 @@ public class MQGatewayAnnotationProcessor implements GatewayAnnotationProcessor<
 
     @Override
     public Object process(MQGateway gatewayAnnotation, Class<?> candidateComponent) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }

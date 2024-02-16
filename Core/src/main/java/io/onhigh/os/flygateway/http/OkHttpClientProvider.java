@@ -11,7 +11,7 @@ public class OkHttpClientProvider implements HttpClientProvider {
 
 
     @Override
-    public Client getClient(GatewayFactory.Context context) {
+    public Client getClient(HttpGatewayFactory.HttpCreateGatewayContext context) {
 //        HttpLoggingInterceptor.Level logLevel = environment.getProperty(
 //                "flygateway.okhttp.log.level", HttpLoggingInterceptor.Level.class,
 //                HttpLoggingInterceptor.Level.BASIC);

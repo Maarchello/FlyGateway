@@ -2,16 +2,16 @@ package io.onhigh.os.flygateway;
 
 import io.onhigh.os.flygateway.dto.CharactersResponse;
 import io.onhigh.os.flygateway.http.HttpClientProvider;
+import io.onhigh.os.flygateway.http.HttpEnvironment;
 import io.onhigh.os.flygateway.http.OkHttpClientProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
-public class FlyGatewayTest {
+public class HttpGatewayTest {
 
-    private static final FlyEnvironment DEFAULT_ENV = new FlyEnvironment() {
+    private static final HttpEnvironment DEFAULT_ENV = new HttpEnvironment() {
 
         @Override
         public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
@@ -31,10 +31,10 @@ public class FlyGatewayTest {
 
     @Test
     public void defaultTest() {
-        TestGateway testGateway = FlyGateway.get(TestGateway.class, DEFAULT_ENV);
-        CharactersResponse charactersResponse = testGateway.getCharacters();
+        TestHttpGateway testHttpGateway = FlyGateway.get(TestHttpGateway.class, DEFAULT_ENV);
+        CharactersResponse charactersResponse = testHttpGateway.getCharacters();
         Assertions.assertFalse(charactersResponse.getResults().isEmpty());
-
+        Assertions.assertEquals(20, charactersResponse.getResults().size());
     }
 
 }

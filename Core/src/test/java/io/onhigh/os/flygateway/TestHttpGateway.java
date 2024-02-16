@@ -5,7 +5,7 @@ import io.onhigh.os.flygateway.http.api.GetRequest;
 import io.onhigh.os.flygateway.http.api.HttpGateway;
 
 @HttpGateway(url = "https://rickandmortyapi.com/api")
-public interface TestGateway {
+public interface TestHttpGateway {
 
     @GetRequest("/character")
     CharactersResponse getCharacters();

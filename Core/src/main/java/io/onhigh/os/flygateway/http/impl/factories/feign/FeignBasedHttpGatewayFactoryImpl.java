@@ -1,25 +1,24 @@
 package io.onhigh.os.flygateway.http.impl.factories.feign;
 
-import feign.Feign;
-import feign.Logger;
-import feign.Request;
-import feign.Retryer;
+import feign.*;
+import feign.codec.ErrorDecoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.slf4j.Slf4jLogger;
-import io.onhigh.os.flygateway.FlyEnvironment;
+import io.onhigh.os.flygateway.http.HttpEnvironment;
 import io.onhigh.os.flygateway.http.HttpGatewayFactory;
 import io.onhigh.os.flygateway.http.codec.JacksonExtendedDecoder;
 import io.onhigh.os.flygateway.http.impl.factories.feign.contract.FlyGatewayApiContract;
+import io.onhigh.os.flygateway.util.VarArgs;
 
 import java.util.concurrent.TimeUnit;
 
 public class FeignBasedHttpGatewayFactoryImpl implements HttpGatewayFactory {
 
     private final Class<?> type;
-    private final FlyEnvironment flyEnvironment;
+    private final HttpEnvironment flyEnvironment;
 
-    public FeignBasedHttpGatewayFactoryImpl(Class<?> type, FlyEnvironment flyEnvironment) {
+    public FeignBasedHttpGatewayFactoryImpl(Class<?> type, HttpEnvironment flyEnvironment) {
         this.type = type;
         this.flyEnvironment = flyEnvironment;
     }
@@ -30,11 +29,11 @@ public class FeignBasedHttpGatewayFactoryImpl implements HttpGatewayFactory {
     }
 
     @Override
-    public Object getGateway(Context context) {
+    public Object createGateway(HttpCreateGatewayContext context) {
         return getObject(context);
     }
 
-    private <T> T getObject(Context context) {
+    private <T> T getObject(HttpCreateGatewayContext context) {
 
         Request.Options requestOptions = new Request.Options(
                 context.getConnectTimeout(), TimeUnit.MILLISECONDS,
@@ -43,7 +42,7 @@ public class FeignBasedHttpGatewayFactoryImpl implements HttpGatewayFactory {
         return (T) Feign.builder()
                 .requestInterceptors(context.getRequestInterceptors())
                 .retryer(Retryer.NEVER_RETRY)
-                .errorDecoder(context.getErrorDecoder())
+                .errorDecoder((methodKey, response) -> context.getErrorDecoder().decode(new VarArgs(methodKey, response)))
                 .contract(new FlyGatewayApiContract(flyEnvironment))
                 .client(this.flyEnvironment.getHttpClientProvider().getClient(context))
                 .encoder(new JacksonEncoder(context.getObjectMapper()))

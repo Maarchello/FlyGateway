@@ -1,4 +1,4 @@
-package io.onhigh.os.flygateway.mq;
+package io.onhigh.os.flygateway.mq.api;
 
 /**
  * @author Marat Kadzhaev

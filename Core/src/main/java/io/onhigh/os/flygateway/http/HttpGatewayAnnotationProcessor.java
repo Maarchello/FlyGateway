@@ -2,10 +2,7 @@ package io.onhigh.os.flygateway.http;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.onhigh.os.flygateway.AbstractGatewayAnnotationProcessor;
-import io.onhigh.os.flygateway.FlyEnvironment;
-import io.onhigh.os.flygateway.GatewayConfigurerException;
-import io.onhigh.os.flygateway.GatewayFactory;
+import io.onhigh.os.flygateway.*;
 import io.onhigh.os.flygateway.http.api.HttpGateway;
 import io.onhigh.os.flygateway.http.impl.factories.feign.FeignBasedHttpGatewayFactoryImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +23,12 @@ import static io.onhigh.os.flygateway.util.ReflectionUtils.getAnnotationAttribut
  * @since 18 февр. 2022
  */
 @Slf4j
-public class HttpGatewayAnnotationProcessor extends AbstractGatewayAnnotationProcessor<HttpGateway> {
+public class HttpGatewayAnnotationProcessor implements GatewayAnnotationProcessor<HttpGateway> {
 
-    public HttpGatewayAnnotationProcessor(FlyEnvironment environment) {
-        super(environment);
+    private final HttpEnvironment environment;
+
+    public HttpGatewayAnnotationProcessor(HttpEnvironment environment) {
+        this.environment = environment;
     }
 
     @SuppressWarnings("unchecked")
@@ -39,22 +38,21 @@ public class HttpGatewayAnnotationProcessor extends AbstractGatewayAnnotationPro
         Class<? extends HttpGatewayRegistrar> registrar = (Class<? extends HttpGatewayRegistrar>) getAnnotationAttributeValue("registrar", gatewayAnnotation.getClass())
                 .orElse(null);
 
-        GatewayFactory.Context.ContextBuilder gatewayFactoryContext = Optional.ofNullable(registrar)
+        HttpGatewayFactory.HttpCreateGatewayContext.HttpCreateGatewayContextBuilder gatewayFactoryContext = Optional.ofNullable(registrar)
                 .map(r -> processRegistrar(r).asBuilder())
                 .orElseGet(buildDefaultContext(gatewayAnnotation));
 
         processHttpClientSettings(gatewayAnnotation, gatewayFactoryContext);
 
         HttpGatewayFactory factory = new FeignBasedHttpGatewayFactoryImpl(candidateComponent, environment);
-        return factory.getGateway(gatewayFactoryContext.build());
+        return factory.createGateway(gatewayFactoryContext.build());
     }
 
     @NotNull
-    private Supplier<GatewayFactory.Context.ContextBuilder> buildDefaultContext(HttpGateway gatewayAnnotation) {
-        return () -> GatewayFactory.Context.builder()
+    private Supplier<HttpGatewayFactory.HttpCreateGatewayContext.HttpCreateGatewayContextBuilder> buildDefaultContext(HttpGateway gatewayAnnotation) {
+        return () -> HttpGatewayFactory.HttpCreateGatewayContext.builder()
                 .url(getUrl(gatewayAnnotation))
                 .properties(environment.getPropertiesMap())
-//                .errorDecoder(null)
                 .clientReadTimeout(gatewayAnnotation.clientReadTimeout())
                 .connectTimeout(gatewayAnnotation.clientConnectTimeout())
                 .clientWriteTimeout(gatewayAnnotation.clientWriteTimeout())
@@ -63,7 +61,7 @@ public class HttpGatewayAnnotationProcessor extends AbstractGatewayAnnotationPro
                 .requestInterceptors(new ArrayList<>());
     }
 
-    private void processHttpClientSettings(HttpGateway gatewayAnnotation, GatewayFactory.Context.ContextBuilder gatewayFactoryContext) {
+    private void processHttpClientSettings(HttpGateway gatewayAnnotation, HttpGatewayFactory.HttpCreateGatewayContext.HttpCreateGatewayContextBuilder gatewayFactoryContext) {
         if (gatewayFactoryContext == null || gatewayAnnotation == null) return;
 
         gatewayFactoryContext.connectTimeout(gatewayAnnotation.clientConnectTimeout());
@@ -71,11 +69,11 @@ public class HttpGatewayAnnotationProcessor extends AbstractGatewayAnnotationPro
         gatewayFactoryContext.clientWriteTimeout(gatewayAnnotation.clientWriteTimeout());
     }
 
-    private GatewayFactory.Context processRegistrar(Class<? extends HttpGatewayRegistrar> registrar) {
+    private HttpGatewayFactory.HttpCreateGatewayContext processRegistrar(Class<? extends HttpGatewayRegistrar> registrar) {
         HttpGatewayRegistrar httpGatewayRegistrar = createHttpGatewayRegistrar(registrar);
 
         if (httpGatewayRegistrar.isEnabled()) {
-            return GatewayFactory.Context.EMPTY;
+            return HttpGatewayFactory.HttpCreateGatewayContext.EMPTY;
         }
 
         String url = httpGatewayRegistrar.getUrl();
@@ -83,9 +81,9 @@ public class HttpGatewayAnnotationProcessor extends AbstractGatewayAnnotationPro
             throw new GatewayConfigurerException("You must provide url attribute or implement method getUrl in your HttpGatewayRegistrar");
         }
 
-        return GatewayFactory.Context.builder()
+        return HttpGatewayFactory.HttpCreateGatewayContext.builder()
                 .url(url)
-                .errorDecoder(httpGatewayRegistrar.getErrorDecoder())
+//                .errorDecoder()
                 .objectMapper(httpGatewayRegistrar.getObjectMapper())
                 .requestInterceptors(httpGatewayRegistrar.getRequestInterceptors())
                 .build();

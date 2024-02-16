@@ -17,5 +17,4 @@ public interface FlyEnvironment {
 
     Map<String, String> getPropertiesMap();
 
-    HttpClientProvider getHttpClientProvider();
 }
